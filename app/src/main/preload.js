@@ -2,37 +2,81 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld(
-  'convoy', 
-  {
-    // Configuration
-    getConfig: () => ipcRenderer.invoke('convoy:getConfig'),
-    saveConfig: (config) => ipcRenderer.invoke('convoy:saveConfig', config),
+contextBridge.exposeInMainWorld('electronAPI', {
+  // Window controls
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('window:maximize'),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
+  
+  // IPC communication
+  invoke: (channel, ...args) => {
+    // Whitelist channels to ensure only safe ones are used
+    const validChannels = [
+      'projects:getAll', 
+      'projects:getById', 
+      'projects:create', 
+      'projects:update', 
+      'projects:delete',
+      'tasks:getAll', 
+      'tasks:getById', 
+      'tasks:getByProject', 
+      'tasks:create', 
+      'tasks:update', 
+      'tasks:delete',
+      'activities:getAll', 
+      'activities:getByProject', 
+      'activities:getByTask'
+    ];
     
-    // Project Management
-    getProjects: () => ipcRenderer.invoke('convoy:getProjects'),
-    createProject: (projectData) => ipcRenderer.invoke('convoy:createProject', projectData),
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.invoke(channel, ...args);
+    }
     
-    // Task Management
-    getTasks: (projectId) => ipcRenderer.invoke('convoy:getTasks', projectId),
-    getTask: (taskId) => ipcRenderer.invoke('convoy:getTask', taskId),
-    updateTaskStatus: (taskId, status) => ipcRenderer.invoke('convoy:updateTaskStatus', taskId, status),
+    return Promise.reject(new Error(`Channel ${channel} is not allowed`));
+  },
+  
+  on: (channel, callback) => {
+    const validChannels = [
+      'projects:updated',
+      'tasks:updated',
+      'activities:new'
+    ];
     
-    // AI Planning
-    planProject: (projectId, description) => ipcRenderer.invoke('convoy:planProject', projectId, description),
+    if (validChannels.includes(channel)) {
+      // Convert callback to a wrapper that removes the event parameter
+      const subscription = (_event, ...args) => callback(...args);
+      ipcRenderer.on(channel, subscription);
+      
+      // Return a function to remove the listener
+      return () => {
+        ipcRenderer.removeListener(channel, subscription);
+      };
+    }
+  },
+  
+  removeListener: (channel, callback) => {
+    const validChannels = [
+      'projects:updated',
+      'tasks:updated',
+      'activities:new'
+    ];
     
-    // Activity Feed
-    getActivityFeed: (taskId) => ipcRenderer.invoke('convoy:getActivityFeed', taskId),
-    logActivity: (activityData) => ipcRenderer.invoke('convoy:logActivity', activityData),
+    if (validChannels.includes(channel)) {
+      ipcRenderer.removeListener(channel, callback);
+    }
+  },
+  
+  send: (channel, ...args) => {
+    const validChannels = [
+      'log:info',
+      'log:error'
+    ];
     
-    // Checkpoint Management
-    checkTaskCheckpoint: (taskId) => ipcRenderer.invoke('convoy:checkTaskCheckpoint', taskId),
-    generateCheckpointSummary: (taskId, checkpointType) => 
-      ipcRenderer.invoke('convoy:generateCheckpointSummary', taskId, checkpointType),
-    processCheckpointFeedback: (taskId, feedbackContent, approved) => 
-      ipcRenderer.invoke('convoy:processCheckpointFeedback', taskId, feedbackContent, approved),
-    
-    // Cline Integration (placeholder for Phase 3)
-    initializeCline: () => ipcRenderer.invoke('convoy:initializeCline')
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, ...args);
+    }
   }
-);
+});
+
+// Flag that the preload script has successfully loaded
+console.log('Preload script loaded successfully');

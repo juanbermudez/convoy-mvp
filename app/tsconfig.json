@@ -17,8 +17,15 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@/renderer/*": ["src/renderer/*"],
+      "@/renderer/components/*": ["src/renderer/components/*"],
+      "@/renderer/components/ui/*": ["src/renderer/components/ui/*"],
+      "@/renderer/utils/*": ["src/renderer/utils/*"],
+      "@/renderer/hooks/*": ["src/renderer/hooks/*"],
+      "@/renderer/lib/*": ["src/renderer/lib/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "vite.config.ts", "vite.main.config.ts", "vite.preload.config.ts", "vite.renderer.config.mts", "forge.config.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -1,14 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { ConvoyOrchestrator } = require('./orchestrator');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
-
-// Initialize the orchestrator
-const orchestrator = new ConvoyOrchestrator();
 
 let mainWindow;
 
@@ -18,23 +14,22 @@ const createWindow = async () => {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
-  // Initialize the orchestrator
-  await orchestrator.initialize().catch(err => {
-    console.error('Failed to initialize orchestrator:', err);
-  });
-
-  // In production, load the bundled app file
-  // For development, load from a local server or file path
-  mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-
-  // Open DevTools in development
-  // mainWindow.webContents.openDevTools();
+  // In development, we'll load from the Vite dev server
+  if (process.env.NODE_ENV === 'development') {
+    // Load from the Vite dev server
+    const devServerURL = 'http://localhost:5173';
+    mainWindow.loadURL(devServerURL);
+    mainWindow.webContents.openDevTools();
+  } else {
+    // In production, load the built HTML file
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  }
 };
 
 // This method will be called when Electron has finished
@@ -58,67 +53,85 @@ app.on('activate', () => {
   }
 });
 
-// Set up IPC handlers for communication with the renderer process
-
-// Configuration handling
-ipcMain.handle('convoy:getConfig', async () => {
-  return orchestrator.config;
+// Window control handlers
+ipcMain.handle('window:minimize', () => {
+  if (mainWindow) mainWindow.minimize();
 });
 
-ipcMain.handle('convoy:saveConfig', async (event, config) => {
-  return await orchestrator.saveConfiguration(config);
+ipcMain.handle('window:maximize', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  }
 });
 
-// Project management
-ipcMain.handle('convoy:getProjects', async () => {
-  return await orchestrator.getProjects();
+ipcMain.handle('window:close', () => {
+  if (mainWindow) mainWindow.close();
 });
 
-ipcMain.handle('convoy:createProject', async (event, projectData) => {
-  return await orchestrator.createProject(projectData);
+// Mock handlers for testing
+ipcMain.handle('projects:getAll', async () => {
+  return [
+    {
+      id: '1',
+      name: 'Convoy MVP',
+      description: 'AI orchestration platform MVP development',
+      createdAt: '2025-03-15T12:00:00Z',
+      updatedAt: '2025-04-10T15:30:00Z',
+    },
+    {
+      id: '2',
+      name: 'UI Migration',
+      description: 'Migrate from Tremor UI to shadcn/ui',
+      createdAt: '2025-04-01T09:15:00Z',
+      updatedAt: '2025-04-12T14:20:00Z',
+    }
+  ];
 });
 
-// Task management
-ipcMain.handle('convoy:getTasks', async (event, projectId) => {
-  return await orchestrator.getTasks(projectId);
+ipcMain.handle('tasks:getAll', async () => {
+  return [
+    {
+      id: '1',
+      projectId: '1',
+      title: 'Setup project structure',
+      description: 'Create initial project structure and configuration',
+      status: 'completed',
+      createdAt: '2025-03-16T10:00:00Z',
+      updatedAt: '2025-03-18T14:30:00Z',
+    },
+    {
+      id: '2',
+      projectId: '1',
+      title: 'Implement core components',
+      description: 'Create the core UI components for the MVP',
+      status: 'in-progress',
+      createdAt: '2025-03-20T09:15:00Z',
+      updatedAt: '2025-04-10T16:45:00Z',
+    }
+  ];
 });
 
-ipcMain.handle('convoy:getTask', async (event, taskId) => {
-  return await orchestrator.getTask(taskId);
-});
-
-ipcMain.handle('convoy:updateTaskStatus', async (event, taskId, status) => {
-  return await orchestrator.updateTaskStatus(taskId, status);
-});
-
-// AI Planning
-ipcMain.handle('convoy:planProject', async (event, projectId, description) => {
-  return await orchestrator.planProject(projectId, description);
-});
-
-// Activity Feed
-ipcMain.handle('convoy:getActivityFeed', async (event, taskId) => {
-  return await orchestrator.getActivityFeed(taskId);
-});
-
-ipcMain.handle('convoy:logActivity', async (event, activityData) => {
-  return await orchestrator.logActivity(activityData);
-});
-
-// Checkpoint management
-ipcMain.handle('convoy:checkTaskCheckpoint', async (event, taskId) => {
-  return await orchestrator.checkTaskCheckpoint(taskId);
-});
-
-ipcMain.handle('convoy:generateCheckpointSummary', async (event, taskId, checkpointType) => {
-  return await orchestrator.generateCheckpointSummary(taskId, checkpointType);
-});
-
-ipcMain.handle('convoy:processCheckpointFeedback', async (event, taskId, feedbackContent, approved) => {
-  return await orchestrator.processCheckpointFeedback(taskId, feedbackContent, approved);
-});
-
-// Cline Integration (placeholder for Phase 3)
-ipcMain.handle('convoy:initializeCline', async () => {
-  return await orchestrator.initializeCline();
+ipcMain.handle('activities:getAll', async () => {
+  return [
+    {
+      id: '1',
+      type: 'task-created',
+      taskId: '1',
+      projectId: '1',
+      timestamp: '2025-03-16T10:00:00Z',
+      message: 'Task "Setup project structure" created',
+    },
+    {
+      id: '2',
+      type: 'task-completed',
+      taskId: '1',
+      projectId: '1',
+      timestamp: '2025-03-18T14:30:00Z',
+      message: 'Task "Setup project structure" completed',
+    }
+  ];
 });

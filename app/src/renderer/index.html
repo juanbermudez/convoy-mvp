@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Convoy - AI Orchestration Platform</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       margin: 0;
@@ -13,14 +12,6 @@
         sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #111827;
-        color: #f9fafb;
-      }
     }
   </style>
 </head>
@@ -37,13 +28,7 @@
     </div>
   </div>
   
-  <!-- In a real implementation, we would bundle and include the actual app JS here -->
-  <script>
-    // Placeholder for the actual bundled application JavaScript
-    // In a real application with proper build tools, this would be:
-    // <script src="./bundle.js"></script>
-    
-    console.log('Convoy Application UI initialized');
-  </script>
+  <!-- In development, this script tag will be replaced by Vite with the proper imports -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
