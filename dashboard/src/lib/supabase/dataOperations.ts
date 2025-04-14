@@ -1,6 +1,6 @@
 import { supabase } from './client';
 import type { Database } from './types';
-import { addTaskActivity } from './mcp';
+import { addTaskActivity } from './contextService';
 
 // Types for inserting and updating workspace data
 type WorkspaceInsert = Database['public']['Tables']['workspaces']['Insert'];

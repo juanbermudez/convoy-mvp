@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 import { supabase, checkSupabaseConnection } from '@/lib/supabase/client';
-import { getWorkspaces } from '@/lib/supabase/mcp';
+import { getWorkspaces } from '@/lib/supabase/contextService';
 
 /**
  * Component for testing Supabase connection and basic operations

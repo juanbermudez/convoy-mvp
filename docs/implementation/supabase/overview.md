@@ -15,7 +15,7 @@ The Supabase integration consists of several key components:
 
 2. **Supabase Client**: A client configuration that connects to the Supabase project and provides access to the database.
 
-3. **Memory Context Provider (MCP)**: A set of functions that enable efficient retrieval and traversal of the knowledge graph for AI context.
+3. **Context Service**: A set of functions that enable efficient retrieval and traversal of the knowledge graph for AI context.
 
 4. **React Hooks**: Custom hooks that make it easy to access the Memory Bank from React components.
 
@@ -37,7 +37,7 @@ This hierarchy allows for efficient traversal of the knowledge graph and provide
 
 ### Context Retrieval
 
-The Memory Context Provider (MCP) provides efficient retrieval of the complete context for a task, including:
+The Context Service provides efficient retrieval of the complete context for a task, including:
 
 - The task itself
 - Its parent task (if applicable)
@@ -77,8 +77,8 @@ The integration follows this architecture:
 ```
 ┌───────────────┐     ┌─────────────┐     ┌──────────────┐
 │               │     │             │     │              │
-│ React UI      │────►│ React Hooks │────►│ Supabase MCP │
-│ Components    │     │             │     │              │
+│ React UI      │────►│ React Hooks │────►│ Context      │
+│ Components    │     │             │     │ Service      │
 │               │     │             │     │              │
 └───────────────┘     └─────────────┘     └──────────┬───┘
                                                      │
@@ -122,6 +122,6 @@ These tests are accessible via the `/tests/supabase` route in the dashboard.
 For more detailed information about the Supabase integration, refer to the following documents:
 
 - [Database Schema](./schema.md) - Detailed documentation of the database schema
-- [MCP Functions](./mcp.md) - Documentation of the Memory Context Provider functions
+- [Context Service](./context-service.md) - Documentation of the Context Service functions
 - [Data Operations](./data-operations.md) - Documentation of common data operations
 - [React Hooks](./hooks.md) - Documentation of React hooks for using the Memory Bank

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getTaskContext, TaskContext } from '@/lib/supabase/mcp';
+import { getTaskContext, TaskContext } from '@/lib/supabase/contextService';
 
 /**
  * Hook for accessing the Memory Bank context in React components
