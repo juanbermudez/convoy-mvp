@@ -1,0 +1,28 @@
+{
+  "description": "Convoy MVP - AI-assisted development platform",
+  "repository": {
+    "include": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.json",
+      "**/*.md",
+      "**/*.css",
+      "**/*.scss",
+      "**/*.html",
+      "**/*.sql",
+      "**/*.sh"
+    ],
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "**/*.log",
+      "**/.DS_Store",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**",
+      "**/tmp/**"
+    ]
+  }
+}

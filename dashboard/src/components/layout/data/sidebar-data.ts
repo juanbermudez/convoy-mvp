@@ -91,39 +91,8 @@ export const sidebarData: SidebarData = {
         },
         {
           title: 'Knowledge Base',
+          url: '/knowledge-base',
           icon: IconBook2,
-          items: [
-            {
-              title: 'Overview',
-              url: '/overview',
-              comingSoon: true,
-            },
-            {
-              title: 'Architecture',
-              url: '/architecture',
-              comingSoon: true,
-            },
-            {
-              title: 'Technical Specs',
-              url: '/technical-specs',
-              comingSoon: true,
-            },
-            {
-              title: 'Patterns',
-              url: '/patterns',
-              comingSoon: true,
-            },
-            {
-              title: 'Best Practices',
-              url: '/best-practices',
-              comingSoon: true,
-            },
-            {
-              title: 'Source Code',
-              url: '/source-code',
-              comingSoon: true,
-            },
-          ],
         },
         {
           title: 'Workflows',

@@ -1,49 +1,66 @@
 # Convoy MVP
 
-This repository contains the Convoy AI orchestration platform, a system for enhancing AI agent capabilities through structured workflows and knowledge graphs, using prompt engineering techniques inspired by the Cline Memory Bank pattern.
+An AI-assisted development platform designed to help teams build better software through enhanced human-AI collaboration.
 
-## Documentation
+## Project Structure
 
-All documentation is available in the `/docs` directory, organized in a GitBook-compatible format.
-
-- [Main Documentation Index](docs/index.md)
-- [Simplified Solution Summary](docs/simplified-solution-summary.md)
-- [Convoy Workflow](docs/convoy-workflow-fixed.md)
-
-## Key Concepts
-
-- **Memory Bank Pattern**: A prompt engineering approach that structures context retrieval for AI agents
-- **Structured Workflow**: A six-stage workflow with human checkpoints for oversight
-- **Knowledge Graph**: Connects entities with their relationships for complete context retrieval
-- **Supabase Integration**: Uses Supabase for data storage and retrieval
+- **app/** - Electron-based desktop application
+- **dashboard/** - Web dashboard interface built with React
+- **docs/** - Project documentation and guidelines
+- **supabase/** - Database migrations and schema
 
 ## Getting Started
 
-### Setting up GitBook
-
-This repository is designed to be used with GitBook. When setting up GitBook:
-
-1. Create a new space in GitBook
-2. Connect this repository to your GitBook space
-3. Configure GitBook to use the `/docs` folder as the content directory
-
-### Development
-
-To contribute to this project:
-
-1. Clone the repository
-2. Make your changes in the `/docs` directory
-3. Push your changes to GitHub
-4. GitBook will automatically update with your new content
-
-### Deploying to GitHub
-
-Use the provided deployment script to push to GitHub:
+To start the Convoy dashboard:
 
 ```bash
-./deploy-to-github.sh <github-username> <github-repo>
+./start-convoy-dashboard.sh
 ```
+
+## Development Tools
+
+### Repomix Integration
+
+This project uses [Repomix](https://github.com/yamadashy/repomix) to provide AI-friendly representations of the codebase. This helps AI assistants (like Claude, ChatGPT, etc.) better understand the project structure and provide more accurate assistance.
+
+#### Setup
+
+1. Install Repomix globally:
+
+```bash
+npm install -g repomix
+```
+
+2. Generate the codebase representation:
+
+```bash
+./update-repomix.sh
+```
+
+3. Set up the Git hook for automatic updates (optional):
+
+```bash
+./setup-repomix-hook.sh
+```
+
+#### Using Repomix with AI Assistants
+
+When working with AI assistants on complex tasks, you can direct them to the Repomix output:
+
+```
+Please look at the codebase context in .repomix/convoy-codebase.xml to help me with [task description]
+```
+
+For more details, see the [Repomix documentation](.repomix/README.md).
+
+## Memory Bank System
+
+Convoy uses a Memory Bank system to maintain context between AI interactions. This system follows a strict hierarchy and workflow pattern. For more details, see the Memory Bank documentation in the docs/core-concepts directory.
+
+## Contributing
+
+When contributing to this project, please adhere to the workflow guidelines outlined in the documentation.
 
 ## License
 
-MIT
+[License information goes here]

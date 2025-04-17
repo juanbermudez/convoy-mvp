@@ -8,10 +8,11 @@ export function TasksPrimaryButtons() {
     <div className='flex gap-2'>
       <Button 
         size="sm"
-        className='px-2'
+        className='px-2 gap-1'
         onClick={() => setOpen('create')}
       >
         <IconPlus size={16} />
+        <span>New Task</span>
       </Button>
     </div>
   )

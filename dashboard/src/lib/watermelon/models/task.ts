@@ -1,98 +1,238 @@
+/**
+ * Task Model
+ * 
+ * Represents a task in the Convoy data architecture.
+ */
+
 import { Model } from '@nozbe/watermelondb';
-import { field, text, date, bool, relation, children } from '@nozbe/watermelondb/decorators';
+import { Associations } from '@nozbe/watermelondb/Model';
+import { Q } from '@nozbe/watermelondb';
 
 /**
- * Task model for WatermelonDB
- * Represents a task within a milestone
+ * Task model class
  */
 export default class Task extends Model {
+  /** Table name */
   static table = 'tasks';
   
-  static associations = {
-    milestones: { type: 'belongs_to', key: 'milestone_id' },
-    tasks: { type: 'belongs_to', key: 'parent_task_id' },
-    subtasks: { type: 'has_many', foreignKey: 'parent_task_id' },
-    activity_feed: { type: 'has_many', foreignKey: 'task_id' },
-    task_dependencies: { type: 'has_many', foreignKey: 'task_id' },
+  /** Associations with other models */
+  static associations: Associations = {
+    project: { type: 'belongs_to', key: 'project_id' },
+    workstream: { type: 'belongs_to', key: 'workstream_id' }
   };
-
-  @text('milestone_id') milestoneId;
-  @text('parent_task_id') parentTaskId;
-  @text('title') title;
-  @text('description') description;
-  @text('current_stage') currentStage;
-  @text('status') status;
-  @date('created_at') createdAt;
-  @date('updated_at') updatedAt;
-  @date('completion_date') completionDate;
-  @text('remote_id') remoteId;
-  @bool('is_synced') isSynced;
-  @text('sync_status') syncStatus;
-
-  @relation('milestones', 'milestone_id') milestone;
-  @relation('tasks', 'parent_task_id') parentTask;
-  @children('tasks') subtasks;
-  @children('activity_feed') activities;
-  @children('task_dependencies') dependencies;
-
-  /**
-   * Get dependency tasks
-   * This is a helper method to get the actual task objects that this task depends on
+  
+  /** Parent project ID */
+  get projectId(): string { return this.getField('project_id') }
+  set projectId(value: string) { this.setField('project_id', value) }
+  
+  /** Optional parent workstream ID */
+  get workstreamId(): string | undefined { return this.getField('workstream_id') }
+  set workstreamId(value: string | undefined) { this.setField('workstream_id', value) }
+  
+  /** Task title */
+  get title(): string { return this.getField('title') }
+  set title(value: string) { this.setField('title', value) }
+  
+  /** Optional task description */
+  get description(): string | undefined { return this.getField('description') }
+  set description(value: string | undefined) { this.setField('description', value) }
+  
+  /** Task status */
+  get status(): string { return this.getField('status') }
+  set status(value: string) { this.setField('status', value) }
+  
+  /** Task priority */
+  get priority(): string { return this.getField('priority') }
+  set priority(value: string) { this.setField('priority', value) }
+  
+  /** Optional owner ID */
+  get ownerId(): string | undefined { return this.getField('owner_id') }
+  set ownerId(value: string | undefined) { this.setField('owner_id', value) }
+  
+  /** Labels (JSON string) */
+  get labelsJson(): string { return this.getField('labels') }
+  set labelsJson(value: string) { this.setField('labels', value) }
+  
+  /** Relationships reference (JSON string) */
+  get relationshipsJson(): string { return this.getField('relationships_json') }
+  set relationshipsJson(value: string) { this.setField('relationships_json', value) }
+  
+  /** Remote ID (UUID in Supabase) */
+  get remoteId(): string | undefined { return this.getField('remote_id') }
+  set remoteId(value: string | undefined) { this.setField('remote_id', value) }
+  
+  /** Creation timestamp */
+  get createdAt(): Date { return new Date(this.getField('created_at')) }
+  
+  /** Last update timestamp */
+  get updatedAt(): Date { return new Date(this.getField('updated_at')) }
+  
+  /** Parent project relation */
+  get project() {
+    return this.collections.get('projects').findAndObserve(this.projectId)
+  }
+  
+  /** Optional parent workstream relation */
+  get workstream() {
+    return this.workstreamId 
+      ? this.collections.get('workstreams').findAndObserve(this.workstreamId)
+      : null
+  }
+  
+  /** 
+   * Get parsed labels
    */
-  async getDependencyTasks() {
-    const dependencies = await this.dependencies.fetch();
-    const dependsOnTaskIds = dependencies.map((dep) => dep.dependsOnTaskId);
-    
-    if (dependsOnTaskIds.length === 0) {
+  get labels(): string[] {
+    try {
+      return JSON.parse(this.labelsJson);
+    } catch (error) {
       return [];
     }
-    
-    return this.collections.get('tasks').query(
-      Q.where('id', Q.oneOf(dependsOnTaskIds))
-    ).fetch();
   }
-
+  
   /**
-   * Convert the model to a plain object suitable for sync
+   * Set labels
    */
-  toSyncableObject() {
+  set labels(labels: string[]) {
+    this.labelsJson = JSON.stringify(labels);
+  }
+  
+  /**
+   * Get parsed relationships reference
+   */
+  get relationships(): Record<string, any> {
+    try {
+      return JSON.parse(this.relationshipsJson);
+    } catch (error) {
+      return {};
+    }
+  }
+  
+  /**
+   * Set relationships reference
+   */
+  set relationships(relationships: Record<string, any>) {
+    this.relationshipsJson = JSON.stringify(relationships);
+  }
+  
+  /**
+   * Get tasks that are blocked by this task (lazy query)
+   */
+  get blockingTasks() {
+    return this.collections
+      .get('relationships')
+      .query(
+        Q.where('source_type', 'task'),
+        Q.where('source_id', this.id),
+        Q.where('relationship_type', 'task_blocks')
+      )
+  }
+  
+  /**
+   * Get tasks that block this task (lazy query)
+   */
+  get blockedByTasks() {
+    return this.collections
+      .get('relationships')
+      .query(
+        Q.where('source_type', 'task'),
+        Q.where('source_id', this.id),
+        Q.where('relationship_type', 'task_blocked_by')
+      )
+  }
+  
+  /**
+   * Get tasks that are related to this task (lazy query)
+   */
+  get relatedTasks() {
+    return this.collections
+      .get('relationships')
+      .query(
+        Q.where('source_type', 'task'),
+        Q.where('source_id', this.id),
+        Q.where('relationship_type', 'task_related_to')
+      )
+  }
+  
+  /**
+   * Prepare the task for sync with Supabase
+   * @returns Object formatted for Supabase insert/update
+   */
+  prepareForSync(): Record<string, any> {
     return {
-      id: this.remoteId,
-      milestone_id: this.milestoneId,
-      parent_task_id: this.parentTaskId,
+      id: this.remoteId || undefined,
+      project_id: this.collections.get('projects')
+        .findAndObserve(this.projectId)
+        .remoteId,
+      workstream_id: this.workstreamId
+        ? this.collections.get('workstreams')
+            .findAndObserve(this.workstreamId)
+            .remoteId
+        : null,
       title: this.title,
-      description: this.description,
-      current_stage: this.currentStage,
+      description: this.description || null,
       status: this.status,
-      created_at: new Date(this.createdAt).toISOString(),
-      updated_at: new Date(this.updatedAt).toISOString(),
-      completion_date: this.completionDate ? new Date(this.completionDate).toISOString() : null,
+      priority: this.priority,
+      owner_id: this.ownerId || null,
+      labels: JSON.parse(this.labelsJson),
+      relationships: JSON.parse(this.relationshipsJson),
+      created_at: this.createdAt.toISOString(),
+      updated_at: this.updatedAt.toISOString()
     };
   }
-
+  
   /**
-   * Convert a Supabase task object to a WatermelonDB-compatible format
-   * @param supabaseTask Task object from Supabase
-   * @param localMilestoneId Local milestone ID
-   * @param localParentTaskId Local parent task ID (optional)
+   * Update the task from Supabase data
+   * 
+   * @param remoteData Data from Supabase
+   * @param projectMap Map of remote project IDs to local IDs
+   * @param workstreamMap Map of remote workstream IDs to local IDs
+   * @returns Batch of update actions
    */
-  static fromSupabase(supabaseTask, localMilestoneId, localParentTaskId = null) {
-    return {
-      milestone_id: localMilestoneId,
-      parent_task_id: localParentTaskId,
-      title: supabaseTask.title,
-      description: supabaseTask.description,
-      current_stage: supabaseTask.current_stage,
-      status: supabaseTask.status,
-      created_at: new Date(supabaseTask.created_at).getTime(),
-      updated_at: new Date(supabaseTask.updated_at).getTime(),
-      completion_date: supabaseTask.completion_date ? new Date(supabaseTask.completion_date).getTime() : null,
-      remote_id: supabaseTask.id,
-      is_synced: true,
-      sync_status: 'synced',
-    };
+  updateFromRemote(
+    remoteData: Record<string, any>,
+    projectMap: Map<string, string>,
+    workstreamMap: Map<string, string>
+  ): any[] {
+    const localProjectId = projectMap.get(remoteData.project_id);
+    
+    if (!localProjectId) {
+      throw new Error(
+        `Cannot update task: project with remote ID ${remoteData.project_id} not found`
+      );
+    }
+    
+    // Optional workstream mapping
+    let localWorkstreamId;
+    if (remoteData.workstream_id) {
+      localWorkstreamId = workstreamMap.get(remoteData.workstream_id);
+      
+      if (!localWorkstreamId) {
+        console.warn(
+          `Workstream with remote ID ${remoteData.workstream_id} not found, ` +
+          `setting workstream to null for task ${remoteData.id}`
+        );
+      }
+    }
+    
+    return [
+      this.prepareUpdate(task => {
+        task.projectId = localProjectId;
+        task.workstreamId = localWorkstreamId;
+        task.title = remoteData.title;
+        task.description = remoteData.description || undefined;
+        task.status = remoteData.status;
+        task.priority = remoteData.priority;
+        task.ownerId = remoteData.owner_id || undefined;
+        task.labelsJson = JSON.stringify(remoteData.labels || []);
+        task.relationshipsJson = JSON.stringify(remoteData.relationships || {});
+        task.remoteId = remoteData.id;
+      })
+    ];
   }
 }
 
-// Import Q for queries - needs to be after the class definition to avoid circular dependencies
-import { Q } from '@nozbe/watermelondb';
+// Need these imports for Typescript
+import Project from './project';
+import Workstream from './workstream';
+import { Relation } from '@nozbe/watermelondb';

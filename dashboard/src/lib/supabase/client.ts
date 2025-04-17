@@ -1,40 +1,52 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
 
-// Environment variables would typically be defined in a .env file
-// and accessed via import.meta.env or process.env
-// For this implementation, we'll use placeholder values that should be replaced in a real deployment
+// Get environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
-
-/**
- * Supabase client instance for interacting with the Convoy database
- * This client is used for all database operations and context retrieval
- */
-export const supabase = createClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+// Create Supabase client
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
     },
-  }
-);
+  },
+});
 
-/**
- * Check if the Supabase connection is valid
- * @returns {Promise<boolean>} True if connection is valid, false otherwise
- */
-export const checkSupabaseConnection = async (): Promise<boolean> => {
-  try {
-    const { error } = await supabase.from('workspaces').select('id').limit(1);
-    return !error;
-  } catch (error) {
-    console.error('Supabase connection check failed:', error);
-    return false;
-  }
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = (): boolean => {
+  return Boolean(supabaseUrl && supabaseKey);
 };
 
-export default supabase;
+// Helper function to check connection to Supabase
+export async function checkSupabaseConnection(): Promise<boolean> {
+  try {
+    // Perform a simple query to check if we can connect
+    const { error } = await supabase
+      .from('workspaces')
+      .select('id')
+      .limit(1);
+    
+    // If there's no error, connection is successful
+    return !error;
+  } catch (err) {
+    console.error('Supabase connection check failed:', err);
+    return false;
+  }
+}
+
+// Helper function to get current user information
+export async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+// Helper function to get session
+export async function getSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}

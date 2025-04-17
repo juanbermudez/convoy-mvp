@@ -19,8 +19,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible='icon' variant='floating' {...props}>
       <SidebarHeader className="flex flex-col gap-2">
         <WorkspaceSwitcher workspaces={sidebarData.workspaces} />
-        <div className="px-3 w-full max-w-full">
-          <Search placeholder="Search..." className="w-full max-w-full" />
+        <div className="px-3 w-full max-w-full relative group-data-[collapsible=icon]:px-1">
+          <Search placeholder="Search..." className="w-full max-w-full group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center" />
         </div>
       </SidebarHeader>
       <SidebarContent>

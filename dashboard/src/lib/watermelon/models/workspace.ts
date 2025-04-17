@@ -1,53 +1,70 @@
+/**
+ * Workspace Model
+ * 
+ * Represents a workspace in the Convoy data architecture.
+ */
+
 import { Model } from '@nozbe/watermelondb';
-import { field, text, date, children } from '@nozbe/watermelondb/decorators';
+import { Associations } from '@nozbe/watermelondb/Model';
+import { Query, Q } from '@nozbe/watermelondb';
 
 /**
- * Workspace model for WatermelonDB
- * Represents a top-level organizational container
+ * Workspace model class
  */
 export default class Workspace extends Model {
+  /** Table name */
   static table = 'workspaces';
   
-  static associations = {
-    projects: { type: 'has_many', foreignKey: 'workspace_id' },
-    patterns: { type: 'has_many', foreignKey: 'workspace_id' },
-    best_practices: { type: 'has_many', foreignKey: 'workspace_id' },
+  /** Associations with other models */
+  static associations: Associations = {
+    projects: { type: 'has_many', foreignKey: 'workspace_id' }
   };
-
-  @text('name') name;
-  @text('description') description;
-  @date('created_at') createdAt;
-  @date('updated_at') updatedAt;
-  @text('remote_id') remoteId;
-
-  @children('projects') projects;
-  @children('patterns') patterns;
-  @children('best_practices') bestPractices;
-
+  
+  // Properties - these work with the generated getters/setters
+  get name(): string { return this.getField('name') }
+  set name(value: string) { return this.setField('name', value) }
+  
+  get description(): string | undefined { return this.getField('description') }
+  set description(value: string | undefined) { return this.setField('description', value) }
+  
+  get remoteId(): string | undefined { return this.getField('remote_id') }
+  set remoteId(value: string | undefined) { return this.setField('remote_id', value) }
+  
+  get createdAt(): Date { return new Date(this.getField('created_at')) }
+  
+  get updatedAt(): Date { return new Date(this.getField('updated_at')) }
+  
+  // Associations
+  get projects(): Query { return this.collections.get('projects').query(Q.where('workspace_id', this.id)) }
+  
   /**
-   * Convert the model to a plain object suitable for sync
+   * Prepare the workspace for sync with Supabase
+   * @returns Object formatted for Supabase insert/update
    */
-  toSyncableObject() {
+  prepareForSync(): Record<string, any> {
     return {
-      id: this.remoteId,
+      id: this.remoteId || undefined,
       name: this.name,
-      description: this.description,
-      created_at: new Date(this.createdAt).toISOString(),
-      updated_at: new Date(this.updatedAt).toISOString(),
+      description: this.description || null,
+      created_at: this.createdAt.toISOString(),
+      updated_at: this.updatedAt.toISOString()
     };
   }
-
+  
   /**
-   * Convert a Supabase workspace object to a WatermelonDB-compatible format
-   * @param supabaseWorkspace Workspace object from Supabase
+   * Update the workspace from Supabase data
+   * 
+   * @param remoteData Data from Supabase
+   * @returns Batch of update actions
    */
-  static fromSupabase(supabaseWorkspace) {
-    return {
-      name: supabaseWorkspace.name,
-      description: supabaseWorkspace.description,
-      created_at: new Date(supabaseWorkspace.created_at).getTime(),
-      updated_at: new Date(supabaseWorkspace.updated_at).getTime(),
-      remote_id: supabaseWorkspace.id,
-    };
+  updateFromRemote(remoteData: Record<string, any>): any[] {
+    return [
+      this.prepareUpdate(workspace => {
+        workspace.name = remoteData.name;
+        workspace.description = remoteData.description || undefined;
+        // Keep createdAt from local if it exists
+        workspace.remoteId = remoteData.id;
+      })
+    ];
   }
 }

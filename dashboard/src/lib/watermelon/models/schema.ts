@@ -35,6 +35,22 @@ export const schema = appSchema({
       ]
     }),
     
+    // Workstreams table
+    tableSchema({
+      name: 'workstreams',
+      columns: [
+        { name: 'project_id', type: 'string', isIndexed: true },
+        { name: 'name', type: 'string', isIndexed: true },
+        { name: 'description', type: 'string', isOptional: true },
+        { name: 'status', type: 'string', isIndexed: true },
+        { name: 'progress', type: 'number' },
+        { name: 'owner_id', type: 'string', isOptional: true, isIndexed: true },
+        { name: 'remote_id', type: 'string', isOptional: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' }
+      ]
+    }),
+    
     // Milestones table
     tableSchema({
       name: 'milestones',
@@ -55,18 +71,18 @@ export const schema = appSchema({
     tableSchema({
       name: 'tasks',
       columns: [
-        { name: 'milestone_id', type: 'string', isIndexed: true },
-        { name: 'parent_task_id', type: 'string', isIndexed: true, isOptional: true },
+        { name: 'project_id', type: 'string', isIndexed: true },
+        { name: 'workstream_id', type: 'string', isIndexed: true, isOptional: true },
         { name: 'title', type: 'string', isIndexed: true },
         { name: 'description', type: 'string', isOptional: true },
-        { name: 'current_stage', type: 'string', isIndexed: true },
         { name: 'status', type: 'string', isIndexed: true },
+        { name: 'priority', type: 'string', isIndexed: true },
+        { name: 'owner_id', type: 'string', isOptional: true, isIndexed: true },
+        { name: 'labels', type: 'string' }, // JSON string
+        { name: 'relationships_json', type: 'string' }, // JSON string for quick reference
+        { name: 'remote_id', type: 'string', isOptional: true, isIndexed: true },
         { name: 'created_at', type: 'number' },
-        { name: 'updated_at', type: 'number' },
-        { name: 'completion_date', type: 'number', isOptional: true },
-        { name: 'remote_id', type: 'string', isIndexed: true },
-        { name: 'is_synced', type: 'boolean' },
-        { name: 'sync_status', type: 'string' },
+        { name: 'updated_at', type: 'number' }
       ]
     }),
     
@@ -137,6 +153,21 @@ export const schema = appSchema({
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'remote_id', type: 'string', isIndexed: true },
+      ]
+    }),
+    
+    // Relationships table
+    tableSchema({
+      name: 'relationships',
+      columns: [
+        { name: 'source_type', type: 'string', isIndexed: true },
+        { name: 'source_id', type: 'string', isIndexed: true },
+        { name: 'relationship_type', type: 'string', isIndexed: true },
+        { name: 'target_type', type: 'string', isIndexed: true },
+        { name: 'target_id', type: 'string', isIndexed: true },
+        { name: 'metadata_json', type: 'string' }, // JSON string
+        { name: 'remote_id', type: 'string', isOptional: true },
+        { name: 'created_at', type: 'number' }
       ]
     }),
     
