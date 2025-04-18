@@ -1,66 +1,84 @@
 # Convoy MVP
 
-An AI-assisted development platform designed to help teams build better software through enhanced human-AI collaboration.
+Convoy is an AI-native web application for software development, designed to orchestrate AI agents within a structured, human-supervised workflow using a Supabase-backed Knowledge Graph.
 
-## Project Structure
+## Core Features
 
-- **app/** - Electron-based desktop application
-- **dashboard/** - Web dashboard interface built with React
-- **docs/** - Project documentation and guidelines
-- **supabase/** - Database migrations and schema
+- **AI-Assisted Development**: Streamline software development through AI assistance
+- **Knowledge Graph**: Structured project context with entities and relationships stored in Supabase
+- **Memory Bank**: Central repository for documentation and project context
+- **Documentation Viewer**: Access to project documentation and specifications
+- **Offline Support**: Local-first approach for working without an internet connection
+
+## Technology Stack
+
+- **Frontend**: Next.js (App Router), React, TypeScript, Shadcn/ui, Tailwind CSS
+- **Backend**: Next.js API Routes / Server Components, Supabase (Postgres DB, Auth)
+- **Data Storage**: WatermelonDB for local data, Supabase for remote
+- **Documentation**: Markdown with special components for rich formatting
 
 ## Getting Started
 
-To start the Convoy dashboard:
+### Prerequisites
 
-```bash
-./start-convoy-dashboard.sh
-```
+- Node.js 18+
+- npm or pnpm
+- Supabase account (for remote data storage)
 
-## Development Tools
+### Installation
 
-### Repomix Integration
+1. Clone the repository:
+   ```
+   git clone https://github.com/juanbermudez/convoy-mvp.git
+   cd convoy-mvp
+   ```
 
-This project uses [Repomix](https://github.com/yamadashy/repomix) to provide AI-friendly representations of the codebase. This helps AI assistants (like Claude, ChatGPT, etc.) better understand the project structure and provide more accurate assistance.
+2. Install dependencies:
+   ```
+   cd dashboard
+   npm install
+   # or
+   pnpm install
+   ```
 
-#### Setup
+3. Set up environment variables:
+   - Copy `.env.example` to `.env.local`
+   - Add your Supabase credentials
 
-1. Install Repomix globally:
+4. Start the development server:
+   ```
+   npm run dev
+   # or
+   pnpm dev
+   ```
 
-```bash
-npm install -g repomix
-```
+5. Open [http://localhost:5173](http://localhost:5173) to see the application
 
-2. Generate the codebase representation:
+## Project Structure
 
-```bash
-./update-repomix.sh
-```
+- `/dashboard`: Main application code
+  - `/src`: Source files
+    - `/features`: Feature-specific components and logic
+    - `/services`: Service layer for data access
+    - `/components`: Reusable UI components
+    - `/hooks`: Custom React hooks
+    - `/lib`: Utility functions and libraries
+- `/docs`: Documentation files
+- `/project-context`: Project context files for Memory Bank
 
-3. Set up the Git hook for automatic updates (optional):
+## Knowledge Base Supabase Implementation
 
-```bash
-./setup-repomix-hook.sh
-```
+The project includes a Supabase-backed Knowledge Base documentation system:
 
-#### Using Repomix with AI Assistants
-
-When working with AI assistants on complex tasks, you can direct them to the Repomix output:
-
-```
-Please look at the codebase context in .repomix/convoy-codebase.xml to help me with [task description]
-```
-
-For more details, see the [Repomix documentation](.repomix/README.md).
-
-## Memory Bank System
-
-Convoy uses a Memory Bank system to maintain context between AI interactions. This system follows a strict hierarchy and workflow pattern. For more details, see the Memory Bank documentation in the docs/core-concepts directory.
+- Database tables for storing documentation content
+- Dynamic sidebar navigation based on document structure
+- Markdown rendering with support for rich content
+- Fallback to local data when offline
 
 ## Contributing
 
-When contributing to this project, please adhere to the workflow guidelines outlined in the documentation.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-[License information goes here]
+This project is licensed under the MIT License - see the LICENSE file for details.
